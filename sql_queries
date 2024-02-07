@@ -1,0 +1,107 @@
+USE clinic_sql_database;
+
+SELECT
+	*
+FROM appointment;
+
+-- 1 How many doctors does the clinic have and what is their specialty?
+
+SELECT
+	d.doctor_id AS 'Doctor ID',
+	d.name AS 'Doctor Name',
+    s.name AS Speciality
+FROM doctor AS d
+	LEFT JOIN speciality AS s
+		ON d.speciality_id = s.speciality_id
+ORDER BY 
+	d.doctor_id;
+
+-- 2 How mmany doctors are there for each speciality?
+
+SELECT
+	s.speciality_id,
+	s.name,
+    COUNT(d.speciality_id) AS 'Number of Doctors'
+FROM speciality as s
+	LEFT JOIN doctor AS d
+		ON s.speciality_id = d.speciality_id
+GROUP BY
+	s.name
+ORDER BY
+	s.name;
+    
+-- 3. How many appointments are made with each doctor?
+
+SELECT
+	d.name AS Name,
+	COUNT(a.appointment_id) AS 'Total Appointments'
+FROM doctor AS d
+	LEFT JOIN appointment AS a
+		ON d.doctor_id = a.doctor_id
+GROUP BY
+	d.name
+ORDER BY
+	COUNT(a.appointment_id) DESC;
+
+-- 4. How many appointments are made per patient?
+
+SELECT 
+    p.patient_id AS Patient,
+    COUNT(a.appointment_id) AS 'Total Appointments'
+FROM patient AS p
+	LEFT JOIN appointment AS a
+		ON p.patient_id = a.patient_id
+GROUP BY
+	Patient
+ORDER BY
+	COUNT(a.appointment_id) DESC;
+    
+-- 5. How many male and female patients have been to the clinic?
+
+SELECT
+	COUNT(patient_id) AS 'Total Patients',
+	SUM(CASE WHEN gender = 'male' THEN 1 ELSE 0 END) AS Male,
+	SUM(CASE WHEN gender = 'female' THEN 1 ELSE 0 END) AS Female
+FROM patient;
+
+-- 6. How old were the patients when they came to the clinic and who is the oldest?
+
+SELECT
+	p.patient_id AS Patient,
+    p.name AS Name, 
+    TIMESTAMPDIFF(YEAR, p.dob, a.appointment_date) AS Age
+FROM patient AS p
+	LEFT JOIN appointment AS a
+		ON p.patient_id = a.patient_id
+GROUP BY 
+	p.patient_id
+ORDER BY
+	AGE DESC;
+
+-- 7. How many drugs are used by the clinic and what descriptions are provided?
+SELECT 
+	m.medication_id AS 'Medication ID',
+    m.name AS Drug,
+    m.manufacturer AS Manufacturer,
+    m.description AS Description
+FROM medication AS m;
+
+-- 8. How many times were each drug prescriped at the clinic? Who prescribed it?
+
+SELECT
+	p.prescription_id As Prescription,
+    m.name AS 'Drug Name',
+    COUNT(m.medication_id) AS 'Total Times Prescribed',
+    d.name AS 'Doctor Name'
+FROM prescription AS p
+	LEFT JOIN medication AS m
+		ON m.medication_id = p.medication_id
+	LEFT JOIN appointment AS a
+		ON p.appointment_id = a.appointment_id
+	LEFT JOIN doctor AS d
+		ON a.doctor_id = d.doctor_id
+GROUP BY 
+	m.name
+ORDER BY
+	Prescription;
+	
